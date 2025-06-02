@@ -29,8 +29,8 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RouterClient interface {
-	NotifyClient(ctx context.Context, in *Packet, opts ...grpc.CallOption) (*PacketSendResponse, error)
-	RequestClient(ctx context.Context, in *Packet, opts ...grpc.CallOption) (*PacketSendResponse, error)
+	NotifyClient(ctx context.Context, in *Packet, opts ...grpc.CallOption) (*RouterEmpty, error)
+	RequestClient(ctx context.Context, in *RequestPacket, opts ...grpc.CallOption) (*RouterEmpty, error)
 }
 
 type routerClient struct {
@@ -41,9 +41,9 @@ func NewRouterClient(cc grpc.ClientConnInterface) RouterClient {
 	return &routerClient{cc}
 }
 
-func (c *routerClient) NotifyClient(ctx context.Context, in *Packet, opts ...grpc.CallOption) (*PacketSendResponse, error) {
+func (c *routerClient) NotifyClient(ctx context.Context, in *Packet, opts ...grpc.CallOption) (*RouterEmpty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(PacketSendResponse)
+	out := new(RouterEmpty)
 	err := c.cc.Invoke(ctx, Router_NotifyClient_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -51,9 +51,9 @@ func (c *routerClient) NotifyClient(ctx context.Context, in *Packet, opts ...grp
 	return out, nil
 }
 
-func (c *routerClient) RequestClient(ctx context.Context, in *Packet, opts ...grpc.CallOption) (*PacketSendResponse, error) {
+func (c *routerClient) RequestClient(ctx context.Context, in *RequestPacket, opts ...grpc.CallOption) (*RouterEmpty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(PacketSendResponse)
+	out := new(RouterEmpty)
 	err := c.cc.Invoke(ctx, Router_RequestClient_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -65,8 +65,8 @@ func (c *routerClient) RequestClient(ctx context.Context, in *Packet, opts ...gr
 // All implementations must embed UnimplementedRouterServer
 // for forward compatibility.
 type RouterServer interface {
-	NotifyClient(context.Context, *Packet) (*PacketSendResponse, error)
-	RequestClient(context.Context, *Packet) (*PacketSendResponse, error)
+	NotifyClient(context.Context, *Packet) (*RouterEmpty, error)
+	RequestClient(context.Context, *RequestPacket) (*RouterEmpty, error)
 	mustEmbedUnimplementedRouterServer()
 }
 
@@ -77,10 +77,10 @@ type RouterServer interface {
 // pointer dereference when methods are called.
 type UnimplementedRouterServer struct{}
 
-func (UnimplementedRouterServer) NotifyClient(context.Context, *Packet) (*PacketSendResponse, error) {
+func (UnimplementedRouterServer) NotifyClient(context.Context, *Packet) (*RouterEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NotifyClient not implemented")
 }
-func (UnimplementedRouterServer) RequestClient(context.Context, *Packet) (*PacketSendResponse, error) {
+func (UnimplementedRouterServer) RequestClient(context.Context, *RequestPacket) (*RouterEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RequestClient not implemented")
 }
 func (UnimplementedRouterServer) mustEmbedUnimplementedRouterServer() {}
@@ -123,7 +123,7 @@ func _Router_NotifyClient_Handler(srv interface{}, ctx context.Context, dec func
 }
 
 func _Router_RequestClient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Packet)
+	in := new(RequestPacket)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -135,7 +135,7 @@ func _Router_RequestClient_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: Router_RequestClient_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RouterServer).RequestClient(ctx, req.(*Packet))
+		return srv.(RouterServer).RequestClient(ctx, req.(*RequestPacket))
 	}
 	return interceptor(ctx, in, info, handler)
 }

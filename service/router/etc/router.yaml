@@ -7,3 +7,9 @@ Etcd:
   Hosts:
   - 127.0.0.1:2379
   Key: router.rpc
+
+UserRpc:
+  Etcd:
+    Hosts:
+    - 127.0.0.1:2379
+    Key: user.rpc

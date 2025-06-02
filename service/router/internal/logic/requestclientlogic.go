@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Qsgs-Fans/freekill-server/service/router/internal/svc"
 	"github.com/Qsgs-Fans/freekill-server/service/router/router"
@@ -23,8 +24,19 @@ func NewRequestClientLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Req
 	}
 }
 
-func (l *RequestClientLogic) RequestClient(in *router.Packet) (*router.PacketSendResponse, error) {
-	// todo: add your logic here and delete this line
+func (l *RequestClientLogic) RequestClient(in *router.RequestPacket) (*router.RouterEmpty, error) {
+	server := l.svcCtx.TcpServer
+	conn := server.GetConn(in.ConnectionId)
+	if conn == nil {
+		return &empty,
+		fmt.Errorf("Cannot find connection by connId %v", in.ConnectionId)
+	}
 
-	return &router.PacketSendResponse{}, nil
+	err := conn.Request(in)
+	if err != nil {
+		return &empty,
+		fmt.Errorf("conn.Request error: %v", err)
+	}
+
+	return &empty, nil
 }

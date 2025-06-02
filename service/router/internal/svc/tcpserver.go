@@ -1,4 +1,4 @@
-package other
+package svc
 
 import (
 	"net"
@@ -9,26 +9,26 @@ import (
 )
 
 type TcpServer struct {
-	listenOn string
+	svcCtx *ServiceContext
 	lister net.Listener
 	connections sync.Map // k: connId, v: *TcpConn
 	// TODO: rate limit
 }
 
-func NewTcpServer(listenOn string) *TcpServer {
+func NewTcpServer(svcCtx *ServiceContext) *TcpServer {
 	return &TcpServer {
-		listenOn: listenOn,
+		svcCtx: svcCtx,
 	}
 }
 
 func (self *TcpServer) Start() {
 	var err error
-	self.lister, err = net.Listen("tcp", self.listenOn)
+	self.lister, err = net.Listen("tcp", self.svcCtx.Config.TcpListenOn)
 	if err != nil {
 		logx.Errorf("Tcp listen error: %v", err)
 		return
 	}
-	logx.Infof("Tcp listening at %v", self.listenOn)
+	logx.Infof("Tcp listening at %v", self.svcCtx.Config.TcpListenOn)
 
 	for {
 		conn, err := self.lister.Accept()
@@ -45,6 +45,14 @@ func (self *TcpServer) Start() {
 
 		go tcpConn.listen()
 	}
+}
+
+func (self *TcpServer) GetConn(connId string) (*TcpConn) {
+	val, ok := self.connections.Load(connId)
+	if !ok {
+		return nil
+	}
+	return val.(*TcpConn)
 }
 
 func (self *TcpServer) notifyLoginRequest(connId string) {

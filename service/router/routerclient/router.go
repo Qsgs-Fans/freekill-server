@@ -14,12 +14,13 @@ import (
 )
 
 type (
-	Packet             = router.Packet
-	PacketSendResponse = router.PacketSendResponse
+	Packet        = router.Packet
+	RequestPacket = router.RequestPacket
+	RouterEmpty   = router.RouterEmpty
 
 	Router interface {
-		NotifyClient(ctx context.Context, in *Packet, opts ...grpc.CallOption) (*PacketSendResponse, error)
-		RequestClient(ctx context.Context, in *Packet, opts ...grpc.CallOption) (*PacketSendResponse, error)
+		NotifyClient(ctx context.Context, in *Packet, opts ...grpc.CallOption) (*RouterEmpty, error)
+		RequestClient(ctx context.Context, in *RequestPacket, opts ...grpc.CallOption) (*RouterEmpty, error)
 	}
 
 	defaultRouter struct {
@@ -33,12 +34,12 @@ func NewRouter(cli zrpc.Client) Router {
 	}
 }
 
-func (m *defaultRouter) NotifyClient(ctx context.Context, in *Packet, opts ...grpc.CallOption) (*PacketSendResponse, error) {
+func (m *defaultRouter) NotifyClient(ctx context.Context, in *Packet, opts ...grpc.CallOption) (*RouterEmpty, error) {
 	client := router.NewRouterClient(m.cli.Conn())
 	return client.NotifyClient(ctx, in, opts...)
 }
 
-func (m *defaultRouter) RequestClient(ctx context.Context, in *Packet, opts ...grpc.CallOption) (*PacketSendResponse, error) {
+func (m *defaultRouter) RequestClient(ctx context.Context, in *RequestPacket, opts ...grpc.CallOption) (*RouterEmpty, error) {
 	client := router.NewRouterClient(m.cli.Conn())
 	return client.RequestClient(ctx, in, opts...)
 }

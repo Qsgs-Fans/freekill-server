@@ -23,12 +23,12 @@ func NewRouterServer(svcCtx *svc.ServiceContext) *RouterServer {
 	}
 }
 
-func (s *RouterServer) NotifyClient(ctx context.Context, in *router.Packet) (*router.PacketSendResponse, error) {
+func (s *RouterServer) NotifyClient(ctx context.Context, in *router.Packet) (*router.RouterEmpty, error) {
 	l := logic.NewNotifyClientLogic(ctx, s.svcCtx)
 	return l.NotifyClient(in)
 }
 
-func (s *RouterServer) RequestClient(ctx context.Context, in *router.Packet) (*router.PacketSendResponse, error) {
+func (s *RouterServer) RequestClient(ctx context.Context, in *router.RequestPacket) (*router.RouterEmpty, error) {
 	l := logic.NewRequestClientLogic(ctx, s.svcCtx)
 	return l.RequestClient(in)
 }

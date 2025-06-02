@@ -1,13 +1,16 @@
-package other
+package svc
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net"
 	"time"
 
 	"github.com/Qsgs-Fans/freekill-server/service/router/router"
+	"github.com/Qsgs-Fans/freekill-server/service/user/user"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -49,7 +52,10 @@ func (self *TcpConn) listen() {
 	defer self.conn.Close()
   defer self.server.connections.Delete(self.connId)
 
-	// TODO 登录
+	if err := self.login(); err != nil {
+		logx.Errorf("Login phase failed: %v", err)
+		return
+	}
 
 	for {
 		// 此为心跳包使用。 TODO: 心跳包
@@ -70,16 +76,64 @@ func (self *TcpConn) listen() {
 
 		// TODO: read rate limiter
 
+		// error怎么办呢？
 		self.handlePacket(line)
 	}
 }
 
-func (self *TcpConn) handlePacket(line []byte) {
+func (s *TcpConn) login() error {
+	// TODO 登录 网关在这里要做的事主要就是ip黑名单
+	// TODO 以及在登录流程中，客户端只能发1个包，通过之后才能进入以下的无限循环
+	ctx, cancel := context.WithTimeout(context.Background(), 30 * time.Second)
+	defer cancel()
+
+	urpc := s.server.svcCtx.UserRpc
+	connIdMsg := &user.ConnIdMsg{
+		ConnId: s.connId,
+	}
+	if _, err := urpc.NewConn(ctx, connIdMsg); err != nil {
+		return err
+	}
+
+	reader := bufio.NewReader(s.conn)
+	rawPacket, err := reader.ReadBytes('\n')
+	if err != nil {
+		return fmt.Errorf("failed to read login packet: %v", err)
+	}
+
+	var packetData []any
+	err = json.Unmarshal(rawPacket, &packetData)
+	if err != nil {
+		return fmt.Errorf("JSON.stringify failed: %v", err)
+	}
+
+	loginBytes := packetData[3].(string)
+	var loginData []any
+	err = json.Unmarshal([]byte(loginBytes), &loginData)
+	if err != nil {
+		return fmt.Errorf("JSON.stringify failed: %v", err)
+	}
+	loginPacket := &user.LoginRequest{
+		Username: loginData[0].(string),
+		Password: loginData[1].(string),
+		Md5: loginData[2].(string),
+		Version: loginData[3].(string),
+		Deviceid: loginData[4].(string),
+	}
+	// TODO 处理aesKey
+	_, err = urpc.Login(ctx, loginPacket)
+	if err != nil {
+		return fmt.Errorf("Login fail: %v", err)
+	}
+
+	return nil
+}
+
+func (self *TcpConn) handlePacket(line []byte) error {
 	var rawpacket []any
 	err := json.Unmarshal(line, &rawpacket)
 	if err != nil {
-		// 好像不用发log，发不发呢
-		return
+		return fmt.Errorf("JSON.parse error: %v", err)
 	}
 
 	// TODO 记得进行类型不匹配测试
@@ -98,16 +152,17 @@ func (self *TcpConn) handlePacket(line []byte) {
 	} else if tp & t_REPLY != 0 {
 		reqId := rawpacket[0].(int)
 		if reqId != self.expectedReplyId {
-			// 发log吗?
-			return
+			return fmt.Errorf("requestId != expectedReplyId: ignored.")
 		}
 
 		self.expectedReplyId = -1
 		// TODO
 	}
+
+	return nil
 }
 
-func (self *TcpConn) notify(packet *router.Packet) {
+func (self *TcpConn) Notify(packet *router.Packet) error {
 	tmpPacket := []any{
 		-2,
 		t_NOTIFICATION,
@@ -116,18 +171,17 @@ func (self *TcpConn) notify(packet *router.Packet) {
 	}
 	rawLine, err := json.Marshal(tmpPacket)
 	if err != nil {
-		// 发log?
-		return
+		return fmt.Errorf("JSON.stringify failed: %v", err)
 	}
-	self.send(rawLine)
+	return self.send(rawLine)
 }
 
-func (self *TcpConn) request(packet *router.Packet, timeout int, timestamp int64) {
+func (self *TcpConn) Request(packet *router.RequestPacket) error {
 	self.requestId++
 	self.expectedReplyId = self.requestId
-	self.replyTimeout = timeout
-	self.requestStartTime = timestamp
-	if (timestamp < 0) {
+	self.replyTimeout = int(packet.Timeout)
+	self.requestStartTime = packet.Timestamp
+	if (packet.Timestamp < 0) {
 		self.requestStartTime = time.Now().UnixMilli()
 	}
 	self.replyContent = "__notready"
@@ -142,11 +196,9 @@ func (self *TcpConn) request(packet *router.Packet, timeout int, timestamp int64
 	}
 	rawLine, err := json.Marshal(tmpPacket)
 	if err != nil {
-		// 发log?
-		return
+		return fmt.Errorf("JSON.stringify failed: %v", err)
 	}
-	// 错误处理？
-	self.send(rawLine)
+	return self.send(rawLine)
 }
 
 func (self *TcpConn) send(msg []byte) error {

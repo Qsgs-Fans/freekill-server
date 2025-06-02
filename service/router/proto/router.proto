@@ -10,12 +10,17 @@ message Packet {
   string connectionId = 3;
 }
 
-message PacketSendResponse {
-  bool success = 1;
-  string message = 2;
+message RouterEmpty {}
+
+message RequestPacket {
+  string command = 1;
+  string data = 2;          // JSON string
+  int32  timeout = 3;
+  int64  timestamp = 4;
+  string connectionId = 5;
 }
 
 service Router {
-  rpc notifyClient(Packet) returns (PacketSendResponse);
-  rpc requestClient(Packet) returns (PacketSendResponse);
+  rpc notifyClient(Packet) returns (RouterEmpty);
+  rpc requestClient(RequestPacket) returns (RouterEmpty);
 }

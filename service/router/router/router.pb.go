@@ -83,28 +83,26 @@ func (x *Packet) GetConnectionId() string {
 	return ""
 }
 
-type PacketSendResponse struct {
+type RouterEmpty struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *PacketSendResponse) Reset() {
-	*x = PacketSendResponse{}
+func (x *RouterEmpty) Reset() {
+	*x = RouterEmpty{}
 	mi := &file_proto_router_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *PacketSendResponse) String() string {
+func (x *RouterEmpty) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PacketSendResponse) ProtoMessage() {}
+func (*RouterEmpty) ProtoMessage() {}
 
-func (x *PacketSendResponse) ProtoReflect() protoreflect.Message {
+func (x *RouterEmpty) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_router_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -116,21 +114,83 @@ func (x *PacketSendResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PacketSendResponse.ProtoReflect.Descriptor instead.
-func (*PacketSendResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use RouterEmpty.ProtoReflect.Descriptor instead.
+func (*RouterEmpty) Descriptor() ([]byte, []int) {
 	return file_proto_router_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *PacketSendResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
+type RequestPacket struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Command       string                 `protobuf:"bytes,1,opt,name=command,proto3" json:"command,omitempty"`
+	Data          string                 `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"` // JSON string
+	Timeout       int32                  `protobuf:"varint,3,opt,name=timeout,proto3" json:"timeout,omitempty"`
+	Timestamp     int64                  `protobuf:"varint,4,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	ConnectionId  string                 `protobuf:"bytes,5,opt,name=connectionId,proto3" json:"connectionId,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
-func (x *PacketSendResponse) GetMessage() string {
+func (x *RequestPacket) Reset() {
+	*x = RequestPacket{}
+	mi := &file_proto_router_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RequestPacket) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RequestPacket) ProtoMessage() {}
+
+func (x *RequestPacket) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_router_proto_msgTypes[2]
 	if x != nil {
-		return x.Message
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RequestPacket.ProtoReflect.Descriptor instead.
+func (*RequestPacket) Descriptor() ([]byte, []int) {
+	return file_proto_router_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *RequestPacket) GetCommand() string {
+	if x != nil {
+		return x.Command
+	}
+	return ""
+}
+
+func (x *RequestPacket) GetData() string {
+	if x != nil {
+		return x.Data
+	}
+	return ""
+}
+
+func (x *RequestPacket) GetTimeout() int32 {
+	if x != nil {
+		return x.Timeout
+	}
+	return 0
+}
+
+func (x *RequestPacket) GetTimestamp() int64 {
+	if x != nil {
+		return x.Timestamp
+	}
+	return 0
+}
+
+func (x *RequestPacket) GetConnectionId() string {
+	if x != nil {
+		return x.ConnectionId
 	}
 	return ""
 }
@@ -143,13 +203,17 @@ const file_proto_router_proto_rawDesc = "" +
 	"\x06Packet\x12\x18\n" +
 	"\acommand\x18\x01 \x01(\tR\acommand\x12\x12\n" +
 	"\x04data\x18\x02 \x01(\tR\x04data\x12\"\n" +
-	"\fconnectionId\x18\x03 \x01(\tR\fconnectionId\"H\n" +
-	"\x12PacketSendResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage2e\n" +
-	"\x06Router\x12,\n" +
-	"\fnotifyClient\x12\a.Packet\x1a\x13.PacketSendResponse\x12-\n" +
-	"\rrequestClient\x12\a.Packet\x1a\x13.PacketSendResponseB\n" +
+	"\fconnectionId\x18\x03 \x01(\tR\fconnectionId\"\r\n" +
+	"\vRouterEmpty\"\x99\x01\n" +
+	"\rRequestPacket\x12\x18\n" +
+	"\acommand\x18\x01 \x01(\tR\acommand\x12\x12\n" +
+	"\x04data\x18\x02 \x01(\tR\x04data\x12\x18\n" +
+	"\atimeout\x18\x03 \x01(\x05R\atimeout\x12\x1c\n" +
+	"\ttimestamp\x18\x04 \x01(\x03R\ttimestamp\x12\"\n" +
+	"\fconnectionId\x18\x05 \x01(\tR\fconnectionId2^\n" +
+	"\x06Router\x12%\n" +
+	"\fnotifyClient\x12\a.Packet\x1a\f.RouterEmpty\x12-\n" +
+	"\rrequestClient\x12\x0e.RequestPacket\x1a\f.RouterEmptyB\n" +
 	"Z\b./routerb\x06proto3"
 
 var (
@@ -164,16 +228,17 @@ func file_proto_router_proto_rawDescGZIP() []byte {
 	return file_proto_router_proto_rawDescData
 }
 
-var file_proto_router_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_proto_router_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_proto_router_proto_goTypes = []any{
-	(*Packet)(nil),             // 0: Packet
-	(*PacketSendResponse)(nil), // 1: PacketSendResponse
+	(*Packet)(nil),        // 0: Packet
+	(*RouterEmpty)(nil),   // 1: RouterEmpty
+	(*RequestPacket)(nil), // 2: RequestPacket
 }
 var file_proto_router_proto_depIdxs = []int32{
 	0, // 0: Router.notifyClient:input_type -> Packet
-	0, // 1: Router.requestClient:input_type -> Packet
-	1, // 2: Router.notifyClient:output_type -> PacketSendResponse
-	1, // 3: Router.requestClient:output_type -> PacketSendResponse
+	2, // 1: Router.requestClient:input_type -> RequestPacket
+	1, // 2: Router.notifyClient:output_type -> RouterEmpty
+	1, // 3: Router.requestClient:output_type -> RouterEmpty
 	2, // [2:4] is the sub-list for method output_type
 	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -192,7 +257,7 @@ func file_proto_router_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_router_proto_rawDesc), len(file_proto_router_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

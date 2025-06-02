@@ -59,10 +59,27 @@ $ go mod download
 
 ### 1. 启动除了freekill-server本身之外的其余服务
 
+```sh
+# 窗口1之内启动etcd(默认监听2379端口)
+$ etcd
+# 窗口2之内启动redis
+$ redis-server
+```
+
+### 2. 启动freekill-server
+
 下面介绍的都是直接启动的方式，你可以通过其他方法简化启动流程。
 
 ```sh
+# 窗口1
+$ cd service/user
+$ go run user.go
 
+# 窗口2
+$ cd service/router
+$ go run router.go
 ```
+
+可以用FreeKill客户端测试。毕竟目标就是让正常客户端能正常连接。
 
 ## 部署到服务器

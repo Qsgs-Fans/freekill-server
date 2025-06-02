@@ -1,0 +1,21 @@
+// 主要任务是把客户端的包解析后Rpc方式发给其他服务
+
+syntax = "proto3";
+
+option go_package = "./router";
+
+message Packet {
+  string command = 1;
+  string data = 2;          // JSON string
+  string connectionId = 3;
+}
+
+message PacketSendResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+service Router {
+  rpc notifyClient(Packet) returns (PacketSendResponse);
+  rpc requestClient(Packet) returns (PacketSendResponse);
+}

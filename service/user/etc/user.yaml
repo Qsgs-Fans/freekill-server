@@ -1,5 +1,5 @@
 Name: user.rpc
-ListenOn: 0.0.0.0:8080
+ListenOn: 0.0.0.0:19528
 Etcd:
   Hosts:
   - 127.0.0.1:2379
@@ -11,3 +11,6 @@ RouterRpc:
     - 127.0.0.1:2379
     Key: router.rpc
 
+MySqlSource: username:password@tcp(localhost:3306)/freekill?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
+CacheRedis:
+- Host: localhost:6379

@@ -4,11 +4,15 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 
+	"github.com/Qsgs-Fans/freekill-server/service/router/router"
 	"github.com/Qsgs-Fans/freekill-server/service/user/internal/svc"
+	"github.com/Qsgs-Fans/freekill-server/service/user/model"
 	"github.com/Qsgs-Fans/freekill-server/service/user/user"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -26,6 +30,21 @@ func NewLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LoginLogic 
 		svcCtx: svcCtx,
 		Logger: logx.WithContext(ctx),
 	}
+}
+
+func (l *LoginLogic) checkDeviceIdBanned (deviceId string) error {
+	if len(deviceId) > 64 {
+		return fmt.Errorf("Invalid device id %v: too long", deviceId)
+	}
+
+	_, err := l.svcCtx.BannedDevicesModel.FindOneByDeviceUuid(l.ctx, deviceId)
+	if err == nil {
+		return fmt.Errorf("Refused banned device id %v", deviceId)
+	} else if err != model.ErrNotFound {
+		return fmt.Errorf("Query error: %v", err)
+	}
+
+	return nil
 }
 
 func (l *LoginLogic) decrypt(password string) ([]byte, string, error) {
@@ -60,17 +79,106 @@ func (l *LoginLogic) decrypt(password string) ([]byte, string, error) {
 	return aesKey, userPassword, nil
 }
 
+func (l *LoginLogic) register(in *user.LoginRequest, password string) (*model.Users, error) {
+	var salt int32
+	_ = binary.Read(rand.Reader, binary.LittleEndian, &salt)
+	saltHex := fmt.Sprintf("%x", salt)
+	pwAndSalt := password + saltHex
+	pwHash := sha256.Sum256([]byte(pwAndSalt))
+	pwHashStr := hex.EncodeToString(pwHash[:])
+
+	newUser := &model.Users{
+		Username: in.Username,
+		Password: pwHashStr,
+		Salt: saltHex,
+		Avatar: "liubei",
+	}
+	res, err := l.svcCtx.UsersModel.Insert(l.ctx, newUser)
+	if err != nil {
+		return nil, err
+	}
+	newUser.Id, err = res.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO 添加注册信息 这样才能防止同device id以及ip反复注册
+
+	return newUser, nil
+}
+
+func (l *LoginLogic) checkPassword(in *user.LoginRequest, password string) (*model.Users, error) {
+	res, err := l.svcCtx.UsersModel.FindOneByUsername(l.ctx, in.Username)
+
+	var isReg bool
+	if err != nil {
+		if err == model.ErrNotFound {
+			res2, err2 := l.register(in, password)
+			if err2 != nil {
+				return nil, err2
+			}
+			res = res2
+			isReg = true
+		} else {
+			return nil, err
+		}
+	}
+
+	var passed bool
+	if isReg {
+		passed = true
+	} else {
+		salt := res.Salt
+		pwAndSalt := password + salt
+		pwHash := sha256.Sum256([]byte(pwAndSalt))
+		pwHashStr := hex.EncodeToString(pwHash[:])
+
+		passed = pwHashStr == res.Password
+	}
+
+	if passed {
+		return res, nil
+	} else {
+		return nil, fmt.Errorf("password error: user=%v", in.Username)
+	}
+}
+
 func (l *LoginLogic) Login(in *user.LoginRequest) (*user.LoginReply, error) {
-	// TODO checkVersion
-	// TODO checkMd5
-	// TODO checkUUidBanned
+	// TODO checkVersion 服务端能支持多个客户端版本吗？
+	// TODO checkMd5 MD5保存在哪？能支持多个Md5登录吗？还是必须强制更新到最新的？
+	// TODO 黑名单白名单 此为CRUD 先todo得了
+	err := l.checkDeviceIdBanned(in.Deviceid)
+	if err != nil {
+		errmsg := "you have been banned!"
+		packet := &router.Packet{
+			Command: "ErrorDlg",
+			Data: errmsg,
+			ConnectionId: in.ConnId,
+		}
+		err2 := l.svcCtx.Sender.Notify(l.ctx, packet)
+		if err2 != nil {
+			return &user.LoginReply{}, fmt.Errorf("Error when sending banned message: %v", err2)
+		}
+		return &user.LoginReply{}, err
+	}
+
 	aesKey, password, err := l.decrypt(in.Password)
 	if err != nil {
 		return &user.LoginReply{}, err
 	}
-	// TODO checkPassword
-	fmt.Println(password)
+
+	userInfo, err := l.checkPassword(in, password)
+	if err != nil {
+		return &user.LoginReply{}, err
+	}
+
+	// TODO 在数据库中插入登录信息 此为CRUD
+	fmt.Printf("%p\n", userInfo)
+
+	// TODO 断线重连相关
+
 	// TODO 将用户添加到用户列表（Redis）中之类的 aesKey交给网关层调用者
+
 	return &user.LoginReply{
 		AesKey: aesKey,
 	}, nil

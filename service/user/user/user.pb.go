@@ -60,6 +60,7 @@ func (*UserEmpty) Descriptor() ([]byte, []int) {
 type ConnIdMsg struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ConnId        string                 `protobuf:"bytes,1,opt,name=connId,proto3" json:"connId,omitempty"`
+	ConnIp        []byte                 `protobuf:"bytes,2,opt,name=connIp,proto3" json:"connIp,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -101,6 +102,13 @@ func (x *ConnIdMsg) GetConnId() string {
 	return ""
 }
 
+func (x *ConnIdMsg) GetConnIp() []byte {
+	if x != nil {
+		return x.ConnIp
+	}
+	return nil
+}
+
 type LoginRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
@@ -108,6 +116,8 @@ type LoginRequest struct {
 	Md5           string                 `protobuf:"bytes,3,opt,name=md5,proto3" json:"md5,omitempty"`
 	Version       string                 `protobuf:"bytes,4,opt,name=version,proto3" json:"version,omitempty"`
 	Deviceid      string                 `protobuf:"bytes,5,opt,name=deviceid,proto3" json:"deviceid,omitempty"`
+	ConnId        string                 `protobuf:"bytes,6,opt,name=connId,proto3" json:"connId,omitempty"`
+	ConnIp        []byte                 `protobuf:"bytes,7,opt,name=connIp,proto3" json:"connIp,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -177,6 +187,20 @@ func (x *LoginRequest) GetDeviceid() string {
 	return ""
 }
 
+func (x *LoginRequest) GetConnId() string {
+	if x != nil {
+		return x.ConnId
+	}
+	return ""
+}
+
+func (x *LoginRequest) GetConnIp() []byte {
+	if x != nil {
+		return x.ConnIp
+	}
+	return nil
+}
+
 type LoginReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AesKey        []byte                 `protobuf:"bytes,1,opt,name=aesKey,proto3" json:"aesKey,omitempty"`
@@ -226,15 +250,18 @@ var File_proto_user_proto protoreflect.FileDescriptor
 const file_proto_user_proto_rawDesc = "" +
 	"\n" +
 	"\x10proto/user.proto\"\v\n" +
-	"\tUserEmpty\"#\n" +
+	"\tUserEmpty\";\n" +
 	"\tConnIdMsg\x12\x16\n" +
-	"\x06connId\x18\x01 \x01(\tR\x06connId\"\x8e\x01\n" +
+	"\x06connId\x18\x01 \x01(\tR\x06connId\x12\x16\n" +
+	"\x06connIp\x18\x02 \x01(\fR\x06connIp\"\xbe\x01\n" +
 	"\fLoginRequest\x12\x1a\n" +
 	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x10\n" +
 	"\x03md5\x18\x03 \x01(\tR\x03md5\x12\x18\n" +
 	"\aversion\x18\x04 \x01(\tR\aversion\x12\x1a\n" +
-	"\bdeviceid\x18\x05 \x01(\tR\bdeviceid\"$\n" +
+	"\bdeviceid\x18\x05 \x01(\tR\bdeviceid\x12\x16\n" +
+	"\x06connId\x18\x06 \x01(\tR\x06connId\x12\x16\n" +
+	"\x06connIp\x18\a \x01(\fR\x06connIp\"$\n" +
 	"\n" +
 	"LoginReply\x12\x16\n" +
 	"\x06aesKey\x18\x01 \x01(\fR\x06aesKey2p\n" +

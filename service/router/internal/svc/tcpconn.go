@@ -48,9 +48,34 @@ func NewTcpConn(conn net.Conn, connId string, server *TcpServer) *TcpConn {
 	}
 }
 
+func ipToVarBinary(conn net.Conn) ([]byte, error) {
+	// 1. 获取 RemoteAddr 并解析 IP
+	remoteAddr := conn.RemoteAddr()
+	host, _, err := net.SplitHostPort(remoteAddr.String())
+	if err != nil {
+		return nil, fmt.Errorf("failed to split host:port: %v", err)
+	}
+
+	ip := net.ParseIP(host)
+	if ip == nil {
+		return nil, fmt.Errorf("invalid IP address: %s", host)
+	}
+
+	// 2. 转换为 4 字节 (IPv4) 或 16 字节 (IPv6)
+	var ipBytes []byte
+	if ipv4 := ip.To4(); ipv4 != nil {
+		ipBytes = ipv4 // IPv4: 4 字节
+	} else {
+		ipBytes = ip.To16() // IPv6: 16 字节
+	}
+
+	return ipBytes, nil
+}
+
 func (self *TcpConn) listen() {
 	defer self.conn.Close()
   defer self.server.connections.Delete(self.connId)
+	defer self.logout()
 
 	if err := self.login(); err != nil {
 		logx.Errorf("Login phase failed: %v", err)
@@ -87,9 +112,14 @@ func (s *TcpConn) login() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30 * time.Second)
 	defer cancel()
 
+	ipbytes, err := ipToVarBinary(s.conn)
+	if err != nil {
+		return err
+	}
 	urpc := s.server.svcCtx.UserRpc
 	connIdMsg := &user.ConnIdMsg{
 		ConnId: s.connId,
+		ConnIp: ipbytes,
 	}
 	if _, err := urpc.NewConn(ctx, connIdMsg); err != nil {
 		return err
@@ -113,12 +143,16 @@ func (s *TcpConn) login() error {
 	if err != nil {
 		return fmt.Errorf("JSON.stringify failed: %v", err)
 	}
+
 	loginPacket := &user.LoginRequest{
 		Username: loginData[0].(string),
 		Password: loginData[1].(string),
 		Md5: loginData[2].(string),
 		Version: loginData[3].(string),
 		Deviceid: loginData[4].(string),
+
+		ConnId: s.connId,
+		ConnIp: ipbytes,
 	}
 	// TODO 处理aesKey
 	_, err = urpc.Login(ctx, loginPacket)
@@ -127,6 +161,20 @@ func (s *TcpConn) login() error {
 	}
 
 	return nil
+}
+
+func (s *TcpConn) logout() {
+	ctx, cancel := context.WithTimeout(context.Background(), 30 * time.Second)
+	defer cancel()
+
+	ipbytes, _ := ipToVarBinary(s.conn)
+	connIdMsg := &user.ConnIdMsg{
+		ConnId: s.connId,
+		ConnIp: ipbytes,
+	}
+
+	urpc := s.server.svcCtx.UserRpc
+	urpc.Logout(ctx, connIdMsg)
 }
 
 func (self *TcpConn) handlePacket(line []byte) error {

@@ -35,6 +35,8 @@ type TcpConn struct {
 	requestStartTime int64
 	replyContent string
 
+	// login后才可获取的信息
+	userId int64
 	// TODO Aes密钥
 }
 
@@ -120,6 +122,7 @@ func (s *TcpConn) login() error {
 	connIdMsg := &user.ConnIdMsg{
 		ConnId: s.connId,
 		ConnIp: ipbytes,
+		UserId: 0,
 	}
 	if _, err := urpc.NewConn(ctx, connIdMsg); err != nil {
 		return err
@@ -154,11 +157,14 @@ func (s *TcpConn) login() error {
 		ConnId: s.connId,
 		ConnIp: ipbytes,
 	}
-	// TODO 处理aesKey
-	_, err = urpc.Login(ctx, loginPacket)
+
+	loginReply, err := urpc.Login(ctx, loginPacket)
 	if err != nil {
 		return fmt.Errorf("Login fail: %v", err)
 	}
+
+	s.userId = loginReply.UserId
+	// TODO 处理aesKey
 
 	return nil
 }
@@ -171,6 +177,7 @@ func (s *TcpConn) logout() {
 	connIdMsg := &user.ConnIdMsg{
 		ConnId: s.connId,
 		ConnIp: ipbytes,
+		UserId: s.userId,
 	}
 
 	urpc := s.server.svcCtx.UserRpc
@@ -185,7 +192,12 @@ func (self *TcpConn) handlePacket(line []byte) error {
 	}
 
 	// TODO 记得进行类型不匹配测试
-	tp := rawpacket[1].(int)
+	tpRaw, ok := rawpacket[1].(float64)
+	if !ok {
+		return fmt.Errorf("JSON error: data[1] should be number: %v", string(line))
+	}
+
+	tp := int(tpRaw)
 
 	if tp & t_NOTIFICATION != 0 {
 		// TODO: 等其他rpc施工...

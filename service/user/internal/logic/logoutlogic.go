@@ -24,7 +24,8 @@ func NewLogoutLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LogoutLogi
 }
 
 func (l *LogoutLogic) Logout(in *user.ConnIdMsg) (*user.UserEmpty, error) {
-	// todo: add your logic here and delete this line
+	userId := in.UserId
+	l.svcCtx.HandleUserLogout(userId)
 
 	return &empty, nil
 }

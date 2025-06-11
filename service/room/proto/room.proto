@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+option go_package = "./room";
+
+message CreateRoomRequest {
+  int64 userId = 1;
+  string name = 2;
+  int32 capacity = 3;
+  int32 timeout = 4;
+  string settings = 5;
+}
+
+message JoinRoomRequest {
+  int64 userId = 1;
+  int64 roomId = 2;
+}
+
+message LeaveRoomRequest {
+  int64 userId = 1;
+}
+
+message CreateRoomReply {
+  int64 roomId = 1;
+}
+
+message RoomEmptyReply {}
+
+service Room {
+  rpc CreateRoom(CreateRoomRequest) returns (CreateRoomReply);
+  // 房间应当有自动过期机制
+  rpc JoinRoom(JoinRoomRequest) returns (RoomEmptyReply);
+  rpc LeaveRoom(LeaveRoomRequest) returns (RoomEmptyReply);
+}

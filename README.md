@@ -85,3 +85,25 @@ $ go run router.go
 可以用FreeKill客户端测试。毕竟目标就是让正常客户端能正常连接。
 
 ## 部署到服务器
+
+freekill-server提供两套运行方式：
+
+- 基于systemd单元的；能做到服务重启、冗余之类的基本功能，适合资源紧张的服务器
+- 基于docker的（TODO），比systemd方式更好但需要更多额外开销
+
+当然你也可以按开发者方式手动运行。
+
+### 用systemd单元方式运行
+
+以Debian 13 (Trixie)为例，首先确保安装了几个基本依赖：
+
+```sh
+$ sudo apt install redis mariadb-server etcd-server
+$ sudo systemctl start redis mariadb etcd
+```
+
+以上会安装基础依赖并启动systemd单元。记得在实际应用中不要用默认配置运行，
+先将这些单元进行自己想要的某些配置。当然你还可以继续安装几位的管理单元，
+比如phpmyadmin之类的，它们的安装配置和使用不在叙述范围之内。
+
+然后再利用systemd启动本项目提供的几个微服务单元（TODO）

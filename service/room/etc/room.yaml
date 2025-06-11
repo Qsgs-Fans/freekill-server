@@ -1,0 +1,15 @@
+Name: room.rpc
+ListenOn: 0.0.0.0:19529
+Etcd:
+  Hosts:
+  - 127.0.0.1:2379
+  Key: room.rpc
+
+RouterRpc:
+  Etcd:
+    Hosts:
+    - 127.0.0.1:2379
+    Key: router.rpc
+
+RoomRedis:
+  Host: localhost:6379

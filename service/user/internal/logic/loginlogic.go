@@ -14,6 +14,7 @@ import (
 	"github.com/Qsgs-Fans/freekill-server/service/user/internal/svc"
 	"github.com/Qsgs-Fans/freekill-server/service/user/model"
 	"github.com/Qsgs-Fans/freekill-server/service/user/user"
+	"github.com/Qsgs-Fans/freekill-server/service/room/room"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -173,13 +174,24 @@ func (l *LoginLogic) Login(in *user.LoginRequest) (*user.LoginReply, error) {
 	}
 
 	// TODO 在数据库中插入登录信息 此为CRUD
-	fmt.Printf("%p\n", userInfo)
 
 	// TODO 断线重连相关
 
-	// TODO 将用户添加到用户列表（Redis）中之类的 aesKey交给网关层调用者
+	// 进入server->createNewPlayer()
+	l.svcCtx.AddNewLoginUser(userInfo, in)
 
+	// TODO notify("Setup")
+	// TODO notify("SetServerSettings")
+	// TODO notify("AddTotalGametime")
+	rrpc := l.svcCtx.RoomRpc
+	rrpc.JoinRoom(l.ctx, &room.JoinRoomRequest{
+		UserId: userInfo.Id,
+		RoomId: 0,
+	})
+
+	// 最后 aesKey交给网关层调用者
 	return &user.LoginReply{
 		AesKey: aesKey,
+		UserId: userInfo.Id,
 	}, nil
 }

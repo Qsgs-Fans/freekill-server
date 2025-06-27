@@ -3,7 +3,7 @@
 FreeKill server意在取代FreeKill客户端一般会自带的服务端功能，提供一个更好的后端实现，
 同时也兼容现有的客户端实现。
 
-- [ ] 其他服务应通过消息队列服务实现到网关服务的通信，而非在网关定义RPC服务
+- [X] 其他服务应通过消息队列服务实现到网关服务的通信，而非在网关定义RPC服务
 
 ## 开坑理由
 
@@ -61,11 +61,14 @@ $ go mod download
 
 ### 1. 启动除了freekill-server本身之外的其余服务
 
+Redis更改了许可，故开源社区fork了它的最后一个开源版本，并做出更多优化，名为valkey。
+之后在文档中尽可能用valkey这个名称，但不排除嘴瓢
+
 ```sh
-# 窗口1之内启动etcd(默认监听2379端口)
-$ etcd
-# 窗口2之内启动redis
-$ redis-server
+# 默认你已经安装了mariadb, redis, etcd和rabbitmq，且已配置
+$ sudo systemctl start mariadb redis etcd rabbitmq
+# 或者如果你的发行版删除了redis的话，就改为安装valkey
+$ sudo systemctl start mariadb valkey etcd rabbitmq
 ```
 
 ### 2. 启动freekill-server

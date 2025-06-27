@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Qsgs-Fans/freekill-server/service/router/router"
 	"github.com/Qsgs-Fans/freekill-server/service/user/internal/svc"
 	"github.com/Qsgs-Fans/freekill-server/service/user/model"
 	"github.com/Qsgs-Fans/freekill-server/service/user/user"
@@ -34,12 +33,7 @@ func (l *NewConnLogic) NewConn(in *user.ConnIdMsg) (*user.UserEmpty, error) {
 	if err == nil {
 		// TODO 这里可以发回ban reason和expire数据 但是需要等待客户端更新版本
 		errmsg = "you have been banned!"
-		packet := &router.Packet{
-			Command: "ErrorDlg",
-			Data: errmsg,
-			ConnectionId: in.ConnId,
-		}
-		err = sender.Notify(l.ctx, packet)
+		err = sender.NotifyRaw(l.ctx, "ErrorDlg", errmsg, in.ConnId)
 		if err != nil {
 			return &empty, fmt.Errorf("Error when sending banned message: %v", err)
 		}
@@ -48,12 +42,7 @@ func (l *NewConnLogic) NewConn(in *user.ConnIdMsg) (*user.UserEmpty, error) {
 		return &empty, err
 	}
 
-	packet := &router.Packet{
-		Command: "NetworkDelayTest",
-		Data: l.svcCtx.RsaKeyPair.PublicKeyString,
-		ConnectionId: in.ConnId,
-	}
-	err = sender.Notify(l.ctx, packet)
+	err = sender.NotifyRaw(l.ctx, "NetworkDelayTest", l.svcCtx.RsaKeyPair.PublicKeyString, in.ConnId)
 	if err != nil {
 		return &empty, err
 	}

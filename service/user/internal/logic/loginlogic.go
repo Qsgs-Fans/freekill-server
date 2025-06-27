@@ -10,7 +10,6 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	"github.com/Qsgs-Fans/freekill-server/service/router/router"
 	"github.com/Qsgs-Fans/freekill-server/service/user/internal/svc"
 	"github.com/Qsgs-Fans/freekill-server/service/user/model"
 	"github.com/Qsgs-Fans/freekill-server/service/user/user"
@@ -151,12 +150,7 @@ func (l *LoginLogic) Login(in *user.LoginRequest) (*user.LoginReply, error) {
 	err := l.checkDeviceIdBanned(in.Deviceid)
 	if err != nil {
 		errmsg := "you have been banned!"
-		packet := &router.Packet{
-			Command: "ErrorDlg",
-			Data: errmsg,
-			ConnectionId: in.ConnId,
-		}
-		err2 := l.svcCtx.Sender.Notify(l.ctx, packet)
+		err2 := l.svcCtx.Sender.NotifyRaw(l.ctx, "ErrorDlg", errmsg, in.ConnId)
 		if err2 != nil {
 			return &user.LoginReply{}, fmt.Errorf("Error when sending banned message: %v", err2)
 		}

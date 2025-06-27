@@ -76,7 +76,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 
 	return &ServiceContext{
 		Config: c,
-		Sender: sender.NewSender(c.RouterRpc),
+		Sender: sender.MustNewSender(c.Amqp),
 		RoomRpc: roomclient.NewRoom(zrpc.MustNewClient(c.RoomRpc)),
 
 		RsaKeyPair: kpair,

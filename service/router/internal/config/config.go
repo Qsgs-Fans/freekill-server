@@ -3,8 +3,9 @@ package config
 import "github.com/zeromicro/go-zero/zrpc"
 
 type Config struct {
-	zrpc.RpcServerConf
+	Name string
 	TcpListenOn string
+	Amqp string
 
 	UserRpc zrpc.RpcClientConf
 }

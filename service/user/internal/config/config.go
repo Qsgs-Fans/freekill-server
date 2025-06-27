@@ -9,7 +9,7 @@ import (
 type Config struct {
 	zrpc.RpcServerConf
 
-	RouterRpc zrpc.RpcClientConf
+	Amqp string
 	RoomRpc zrpc.RpcClientConf
 
 	MySqlSource string

@@ -9,7 +9,6 @@ import (
 	"net"
 	"time"
 
-	"github.com/Qsgs-Fans/freekill-server/service/router/router"
 	"github.com/Qsgs-Fans/freekill-server/service/user/user"
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -74,12 +73,12 @@ func ipToVarBinary(conn net.Conn) ([]byte, error) {
 	return ipBytes, nil
 }
 
-func (self *TcpConn) listen() {
-	defer self.conn.Close()
-  defer self.server.connections.Delete(self.connId)
-	defer self.logout()
+func (s *TcpConn) listen() {
+	defer s.conn.Close()
+  defer s.server.connections.Delete(s.connId)
+	defer s.logout()
 
-	if err := self.login(); err != nil {
+	if err := s.login(); err != nil {
 		logx.Errorf("Login phase failed: %v", err)
 		return
 	}
@@ -88,7 +87,7 @@ func (self *TcpConn) listen() {
 		// 此为心跳包使用。 TODO: 心跳包
 		// conn.SetReadDeadline(time.Now().Add(60 * time.Second))
 
-		reader := bufio.NewReader(self.conn)
+		reader := bufio.NewReader(s.conn)
 		line, err := reader.ReadBytes('\n')
 
 		if err != nil {
@@ -104,7 +103,7 @@ func (self *TcpConn) listen() {
 		// TODO: read rate limiter
 
 		// error怎么办呢？
-		self.handlePacket(line)
+		s.handlePacket(line)
 	}
 }
 
@@ -184,7 +183,7 @@ func (s *TcpConn) logout() {
 	urpc.Logout(ctx, connIdMsg)
 }
 
-func (self *TcpConn) handlePacket(line []byte) error {
+func (s *TcpConn) handlePacket(line []byte) error {
 	var rawpacket []any
 	err := json.Unmarshal(line, &rawpacket)
 	if err != nil {
@@ -207,63 +206,63 @@ func (self *TcpConn) handlePacket(line []byte) error {
 		// packet := router.Packet {
 		// 	Command: command,
 		// 	Data: jsonData,
-		// 	ConnectionId: self.connId,
+		// 	ConnectionId: s.connId,
 		// }
 	} else if tp & t_REPLY != 0 {
 		reqId := rawpacket[0].(int)
-		if reqId != self.expectedReplyId {
+		if reqId != s.expectedReplyId {
 			return fmt.Errorf("requestId != expectedReplyId: ignored.")
 		}
 
-		self.expectedReplyId = -1
+		s.expectedReplyId = -1
 		// TODO
 	}
 
 	return nil
 }
 
-func (self *TcpConn) Notify(packet *router.Packet) error {
+func (s *TcpConn) Notify(command string, data string) error {
 	tmpPacket := []any{
 		-2,
 		t_NOTIFICATION,
-		packet.Command,
-		packet.Data,
+		command,
+		data,
 	}
 	rawLine, err := json.Marshal(tmpPacket)
 	if err != nil {
 		return fmt.Errorf("JSON.stringify failed: %v", err)
 	}
-	return self.send(rawLine)
+	return s.send(rawLine)
 }
 
-func (self *TcpConn) Request(packet *router.RequestPacket) error {
-	self.requestId++
-	self.expectedReplyId = self.requestId
-	self.replyTimeout = int(packet.Timeout)
-	self.requestStartTime = packet.Timestamp
-	if (packet.Timestamp < 0) {
-		self.requestStartTime = time.Now().UnixMilli()
+func (s *TcpConn) Request(command string, data string, timeout int64, timestamp int64) error {
+	s.requestId++
+	s.expectedReplyId = s.requestId
+	s.replyTimeout = int(timeout)
+	s.requestStartTime = timestamp
+	if (timestamp < 0) {
+		s.requestStartTime = time.Now().UnixMilli()
 	}
-	self.replyContent = "__notready"
+	s.replyContent = "__notready"
 
 	tmpPacket := []any{
-		self.requestId,
+		s.requestId,
 		t_REQUEST,
-		packet.Command,
-		packet.Data,
-		self.replyTimeout,
-		self.requestStartTime,
+		command,
+		data,
+		s.replyTimeout,
+		s.requestStartTime,
 	}
 	rawLine, err := json.Marshal(tmpPacket)
 	if err != nil {
 		return fmt.Errorf("JSON.stringify failed: %v", err)
 	}
-	return self.send(rawLine)
+	return s.send(rawLine)
 }
 
-func (self *TcpConn) send(msg []byte) error {
+func (s *TcpConn) send(msg []byte) error {
 	msg = append(msg, '\n')
 	// TODO 压缩&加密传输
-	_, err := self.conn.Write(msg)
+	_, err := s.conn.Write(msg)
 	return err
 }

@@ -5,12 +5,7 @@ Etcd:
   - 127.0.0.1:2379
   Key: user.rpc
 
-RouterRpc:
-  Etcd:
-    Hosts:
-    - 127.0.0.1:2379
-    Key: router.rpc
-
+Amqp: "amqp://guest:guest@localhost:5672/"
 RoomRpc:
   Etcd:
     Hosts:

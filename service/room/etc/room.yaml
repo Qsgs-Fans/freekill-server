@@ -5,11 +5,7 @@ Etcd:
   - 127.0.0.1:2379
   Key: room.rpc
 
-RouterRpc:
-  Etcd:
-    Hosts:
-    - 127.0.0.1:2379
-    Key: router.rpc
+Amqp: "amqp://guest:guest@localhost:5672/"
 
 RoomRedis:
   Host: localhost:6379

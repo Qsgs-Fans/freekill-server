@@ -16,10 +16,11 @@ type ServiceContext struct {
 func NewServiceContext(c config.Config) *ServiceContext {
 	ctx := &ServiceContext{
 		Config:    c,
-		UserRpc: userclient.NewUser(zrpc.MustNewClient(c.UserRpc)),
 	}
 	tcpServer := NewTcpServer(ctx)
 	ctx.TcpServer = tcpServer
+
+	ctx.UserRpc = userclient.NewUser(zrpc.MustNewClient(c.UserRpc))
 
 	return ctx
 }

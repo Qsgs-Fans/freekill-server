@@ -1,12 +1,8 @@
-Name: router.rpc
-ListenOn: 0.0.0.0:19527
+Name: tcp-router
 
 TcpListenOn: 0.0.0.0:9527
-
-Etcd:
-  Hosts:
-  - 127.0.0.1:2379
-  Key: router.rpc
+# 用户名密码需自行配置
+Amqp: "amqp://guest:guest@localhost:5672/"
 
 UserRpc:
   Etcd:

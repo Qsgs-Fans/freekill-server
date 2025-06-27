@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/Qsgs-Fans/freekill-server/service/room/internal/config"
-	"github.com/Qsgs-Fans/freekill-server/service/router/router"
 	"github.com/Qsgs-Fans/freekill-server/service/router/sender"
 	"github.com/zeromicro/go-zero/core/stores/redis"
 )
@@ -42,12 +41,7 @@ func (s *ServiceContext) AddPlayerToRoom(userId int64, roomId int64) {
 
 	if roomId == 0 {
 		connId, _ := rds.Hget(userKey, "connId")
-		packet := &router.Packet{
-			Command: "EnterLobby",
-			Data: "",
-			ConnectionId: connId,
-		}
-		s.Sender.Notify(ctx, packet)
+		s.Sender.Notify(ctx, "EnterLobby", nil, connId)
 		// TODO server->updateOnlineInfo
 	} else {
 	}
@@ -56,7 +50,7 @@ func (s *ServiceContext) AddPlayerToRoom(userId int64, roomId int64) {
 func NewServiceContext(c config.Config) *ServiceContext {
 	return &ServiceContext{
 		Config: c,
-		Sender: sender.NewSender(c.RouterRpc),
+		Sender: sender.MustNewSender(c.Amqp),
 		RoomRedis: redis.MustNewRedis(c.RoomRedis),
 	}
 }

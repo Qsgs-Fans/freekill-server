@@ -43,14 +43,7 @@ func (s *ServiceContext) AddPlayerToRoom(userId int64, roomId int64) {
 		// FIXME Room服务假设RoomRedis和PlayerRedis是同一个并不妥当。
 		connId, _ := rds.Hget(userKey, "connId")
 		s.Sender.Notify(ctx, "EnterLobby", nil, connId)
-		packet := &router.Packet{
-			Command: "EnterLobby",
-			Data: "",
-			ConnectionId: connId,
-		}
-		s.Sender.Notify(ctx, packet)
 
->>>>>>> Stashed changes
 		// TODO server->updateOnlineInfo
 	} else {
 	}

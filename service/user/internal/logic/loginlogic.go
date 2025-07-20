@@ -8,9 +8,9 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 
+	"github.com/Qsgs-Fans/freekill-server/service/room/room"
 	"github.com/Qsgs-Fans/freekill-server/service/user/internal/svc"
 	"github.com/Qsgs-Fans/freekill-server/service/user/model"
 	"github.com/Qsgs-Fans/freekill-server/service/user/user"
@@ -145,12 +145,8 @@ func (l *LoginLogic) checkPassword(in *user.LoginRequest, password string) (*mod
 
 func (l *LoginLogic) setupPlayer(connId string, info *model.Users) {
 	sender := l.svcCtx.Sender
-	jsonstr, _ := json.Marshal(&[]any{ info.Id, info.Username, info.Avatar })
-	sender.Notify(l.ctx, &router.Packet{
-		Command: "Setup",
-		Data: string(jsonstr),
-		ConnectionId: connId,
-	})
+	jsonArr := []any{ info.Id, info.Username, info.Avatar }
+	sender.Notify(l.ctx, "Setup", jsonArr, connId)
 }
 
 func (l *LoginLogic) Login(in *user.LoginRequest) (*user.LoginReply, error) {
@@ -188,7 +184,7 @@ func (l *LoginLogic) Login(in *user.LoginRequest) (*user.LoginReply, error) {
 	// TODO notify("SetServerSettings")
 	// TODO notify("AddTotalGametime")
 	rrpc := l.svcCtx.RoomRpc
-	rrpc.JoinRoom(l.ctx, &room.JoinRoomRequest{
+	rrpc.EnterRoom(l.ctx, &room.UidAndRidRequest{
 		UserId: userInfo.Id,
 		RoomId: 0,
 	})

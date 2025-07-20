@@ -9,22 +9,22 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-type LeaveRoomLogic struct {
+type EnterRoomLogic struct {
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 	logx.Logger
 }
 
-func NewLeaveRoomLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LeaveRoomLogic {
-	return &LeaveRoomLogic{
+func NewEnterRoomLogic(ctx context.Context, svcCtx *svc.ServiceContext) *EnterRoomLogic {
+	return &EnterRoomLogic{
 		ctx:    ctx,
 		svcCtx: svcCtx,
 		Logger: logx.WithContext(ctx),
 	}
 }
 
-func (l *LeaveRoomLogic) LeaveRoom(in *room.LeaveRoomRequest) (*room.RoomEmptyReply, error) {
-	// todo: add your logic here and delete this line
+func (l *EnterRoomLogic) EnterRoom(in *room.UidAndRidRequest) (*room.RoomEmptyReply, error) {
+	l.svcCtx.AddPlayerToRoom(in.UserId, in.RoomId)
 
 	return &room.RoomEmptyReply{}, nil
 }

@@ -8,12 +8,12 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 
 	"github.com/Qsgs-Fans/freekill-server/service/user/internal/svc"
 	"github.com/Qsgs-Fans/freekill-server/service/user/model"
 	"github.com/Qsgs-Fans/freekill-server/service/user/user"
-	"github.com/Qsgs-Fans/freekill-server/service/room/room"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -143,6 +143,16 @@ func (l *LoginLogic) checkPassword(in *user.LoginRequest, password string) (*mod
 	}
 }
 
+func (l *LoginLogic) setupPlayer(connId string, info *model.Users) {
+	sender := l.svcCtx.Sender
+	jsonstr, _ := json.Marshal(&[]any{ info.Id, info.Username, info.Avatar })
+	sender.Notify(l.ctx, &router.Packet{
+		Command: "Setup",
+		Data: string(jsonstr),
+		ConnectionId: connId,
+	})
+}
+
 func (l *LoginLogic) Login(in *user.LoginRequest) (*user.LoginReply, error) {
 	// TODO checkVersion 服务端能支持多个客户端版本吗？
 	// TODO checkMd5 MD5保存在哪？能支持多个Md5登录吗？还是必须强制更新到最新的？
@@ -174,7 +184,7 @@ func (l *LoginLogic) Login(in *user.LoginRequest) (*user.LoginReply, error) {
 	// 进入server->createNewPlayer()
 	l.svcCtx.AddNewLoginUser(userInfo, in)
 
-	// TODO notify("Setup")
+	l.setupPlayer(in.ConnId, userInfo)
 	// TODO notify("SetServerSettings")
 	// TODO notify("AddTotalGametime")
 	rrpc := l.svcCtx.RoomRpc

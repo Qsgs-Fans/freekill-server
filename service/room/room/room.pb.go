@@ -97,7 +97,7 @@ func (x *CreateRoomRequest) GetSettings() string {
 	return ""
 }
 
-type JoinRoomRequest struct {
+type UidAndRidRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        int64                  `protobuf:"varint,1,opt,name=userId,proto3" json:"userId,omitempty"`
 	RoomId        int64                  `protobuf:"varint,2,opt,name=roomId,proto3" json:"roomId,omitempty"`
@@ -105,20 +105,20 @@ type JoinRoomRequest struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *JoinRoomRequest) Reset() {
-	*x = JoinRoomRequest{}
+func (x *UidAndRidRequest) Reset() {
+	*x = UidAndRidRequest{}
 	mi := &file_proto_room_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *JoinRoomRequest) String() string {
+func (x *UidAndRidRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*JoinRoomRequest) ProtoMessage() {}
+func (*UidAndRidRequest) ProtoMessage() {}
 
-func (x *JoinRoomRequest) ProtoReflect() protoreflect.Message {
+func (x *UidAndRidRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_room_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -130,46 +130,46 @@ func (x *JoinRoomRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use JoinRoomRequest.ProtoReflect.Descriptor instead.
-func (*JoinRoomRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use UidAndRidRequest.ProtoReflect.Descriptor instead.
+func (*UidAndRidRequest) Descriptor() ([]byte, []int) {
 	return file_proto_room_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *JoinRoomRequest) GetUserId() int64 {
+func (x *UidAndRidRequest) GetUserId() int64 {
 	if x != nil {
 		return x.UserId
 	}
 	return 0
 }
 
-func (x *JoinRoomRequest) GetRoomId() int64 {
+func (x *UidAndRidRequest) GetRoomId() int64 {
 	if x != nil {
 		return x.RoomId
 	}
 	return 0
 }
 
-type LeaveRoomRequest struct {
+type UidRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        int64                  `protobuf:"varint,1,opt,name=userId,proto3" json:"userId,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *LeaveRoomRequest) Reset() {
-	*x = LeaveRoomRequest{}
+func (x *UidRequest) Reset() {
+	*x = UidRequest{}
 	mi := &file_proto_room_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *LeaveRoomRequest) String() string {
+func (x *UidRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*LeaveRoomRequest) ProtoMessage() {}
+func (*UidRequest) ProtoMessage() {}
 
-func (x *LeaveRoomRequest) ProtoReflect() protoreflect.Message {
+func (x *UidRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_room_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -181,12 +181,12 @@ func (x *LeaveRoomRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use LeaveRoomRequest.ProtoReflect.Descriptor instead.
-func (*LeaveRoomRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use UidRequest.ProtoReflect.Descriptor instead.
+func (*UidRequest) Descriptor() ([]byte, []int) {
 	return file_proto_room_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *LeaveRoomRequest) GetUserId() int64 {
+func (x *UidRequest) GetUserId() int64 {
 	if x != nil {
 		return x.UserId
 	}
@@ -283,20 +283,24 @@ const file_proto_room_proto_rawDesc = "" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1a\n" +
 	"\bcapacity\x18\x03 \x01(\x05R\bcapacity\x12\x18\n" +
 	"\atimeout\x18\x04 \x01(\x05R\atimeout\x12\x1a\n" +
-	"\bsettings\x18\x05 \x01(\tR\bsettings\"A\n" +
-	"\x0fJoinRoomRequest\x12\x16\n" +
+	"\bsettings\x18\x05 \x01(\tR\bsettings\"B\n" +
+	"\x10UidAndRidRequest\x12\x16\n" +
 	"\x06userId\x18\x01 \x01(\x03R\x06userId\x12\x16\n" +
-	"\x06roomId\x18\x02 \x01(\x03R\x06roomId\"*\n" +
-	"\x10LeaveRoomRequest\x12\x16\n" +
+	"\x06roomId\x18\x02 \x01(\x03R\x06roomId\"$\n" +
+	"\n" +
+	"UidRequest\x12\x16\n" +
 	"\x06userId\x18\x01 \x01(\x03R\x06userId\")\n" +
 	"\x0fCreateRoomReply\x12\x16\n" +
 	"\x06roomId\x18\x01 \x01(\x03R\x06roomId\"\x10\n" +
-	"\x0eRoomEmptyReply2\x9a\x01\n" +
+	"\x0eRoomEmptyReply2\x9d\x02\n" +
 	"\x04Room\x122\n" +
 	"\n" +
-	"CreateRoom\x12\x12.CreateRoomRequest\x1a\x10.CreateRoomReply\x12-\n" +
-	"\bJoinRoom\x12\x10.JoinRoomRequest\x1a\x0f.RoomEmptyReply\x12/\n" +
-	"\tLeaveRoom\x12\x11.LeaveRoomRequest\x1a\x0f.RoomEmptyReplyB\bZ\x06./roomb\x06proto3"
+	"CreateRoom\x12\x12.CreateRoomRequest\x1a\x10.CreateRoomReply\x12/\n" +
+	"\tEnterRoom\x12\x11.UidAndRidRequest\x1a\x0f.RoomEmptyReply\x121\n" +
+	"\vObserveRoom\x12\x11.UidAndRidRequest\x1a\x0f.RoomEmptyReply\x12(\n" +
+	"\bQuitRoom\x12\v.UidRequest\x1a\x0f.RoomEmptyReply\x12(\n" +
+	"\bAddRobot\x12\v.UidRequest\x1a\x0f.RoomEmptyReply\x12)\n" +
+	"\tStartGame\x12\v.UidRequest\x1a\x0f.RoomEmptyReplyB\bZ\x06./roomb\x06proto3"
 
 var (
 	file_proto_room_proto_rawDescOnce sync.Once
@@ -313,20 +317,26 @@ func file_proto_room_proto_rawDescGZIP() []byte {
 var file_proto_room_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_proto_room_proto_goTypes = []any{
 	(*CreateRoomRequest)(nil), // 0: CreateRoomRequest
-	(*JoinRoomRequest)(nil),   // 1: JoinRoomRequest
-	(*LeaveRoomRequest)(nil),  // 2: LeaveRoomRequest
+	(*UidAndRidRequest)(nil),  // 1: UidAndRidRequest
+	(*UidRequest)(nil),        // 2: UidRequest
 	(*CreateRoomReply)(nil),   // 3: CreateRoomReply
 	(*RoomEmptyReply)(nil),    // 4: RoomEmptyReply
 }
 var file_proto_room_proto_depIdxs = []int32{
 	0, // 0: Room.CreateRoom:input_type -> CreateRoomRequest
-	1, // 1: Room.JoinRoom:input_type -> JoinRoomRequest
-	2, // 2: Room.LeaveRoom:input_type -> LeaveRoomRequest
-	3, // 3: Room.CreateRoom:output_type -> CreateRoomReply
-	4, // 4: Room.JoinRoom:output_type -> RoomEmptyReply
-	4, // 5: Room.LeaveRoom:output_type -> RoomEmptyReply
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
+	1, // 1: Room.EnterRoom:input_type -> UidAndRidRequest
+	1, // 2: Room.ObserveRoom:input_type -> UidAndRidRequest
+	2, // 3: Room.QuitRoom:input_type -> UidRequest
+	2, // 4: Room.AddRobot:input_type -> UidRequest
+	2, // 5: Room.StartGame:input_type -> UidRequest
+	3, // 6: Room.CreateRoom:output_type -> CreateRoomReply
+	4, // 7: Room.EnterRoom:output_type -> RoomEmptyReply
+	4, // 8: Room.ObserveRoom:output_type -> RoomEmptyReply
+	4, // 9: Room.QuitRoom:output_type -> RoomEmptyReply
+	4, // 10: Room.AddRobot:output_type -> RoomEmptyReply
+	4, // 11: Room.StartGame:output_type -> RoomEmptyReply
+	6, // [6:12] is the sub-list for method output_type
+	0, // [0:6] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name

@@ -10,12 +10,12 @@ message CreateRoomRequest {
   string settings = 5;
 }
 
-message JoinRoomRequest {
+message UidAndRidRequest {
   int64 userId = 1;
   int64 roomId = 2;
 }
 
-message LeaveRoomRequest {
+message UidRequest {
   int64 userId = 1;
 }
 
@@ -27,7 +27,16 @@ message RoomEmptyReply {}
 
 service Room {
   rpc CreateRoom(CreateRoomRequest) returns (CreateRoomReply);
-  // 房间应当有自动过期机制
-  rpc JoinRoom(JoinRoomRequest) returns (RoomEmptyReply);
-  rpc LeaveRoom(LeaveRoomRequest) returns (RoomEmptyReply);
+  rpc EnterRoom(UidAndRidRequest) returns (RoomEmptyReply);
+  rpc ObserveRoom(UidAndRidRequest) returns (RoomEmptyReply);
+  rpc QuitRoom(UidRequest) returns (RoomEmptyReply);
+
+  // TODO list
+  // rpc RefreshRoomList
+  rpc AddRobot(UidRequest) returns (RoomEmptyReply);
+  // rpc KickPlayer
+  // rpc Ready
+  rpc StartGame(UidRequest) returns (RoomEmptyReply);
+  //
+  // rpc Chat
 }

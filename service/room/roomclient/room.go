@@ -16,15 +16,19 @@ import (
 type (
 	CreateRoomReply   = room.CreateRoomReply
 	CreateRoomRequest = room.CreateRoomRequest
-	JoinRoomRequest   = room.JoinRoomRequest
-	LeaveRoomRequest  = room.LeaveRoomRequest
 	RoomEmptyReply    = room.RoomEmptyReply
+	UidAndRidRequest  = room.UidAndRidRequest
+	UidRequest        = room.UidRequest
 
 	Room interface {
 		CreateRoom(ctx context.Context, in *CreateRoomRequest, opts ...grpc.CallOption) (*CreateRoomReply, error)
-		// 房间应当有自动过期机制
-		JoinRoom(ctx context.Context, in *JoinRoomRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error)
-		LeaveRoom(ctx context.Context, in *LeaveRoomRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error)
+		EnterRoom(ctx context.Context, in *UidAndRidRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error)
+		ObserveRoom(ctx context.Context, in *UidAndRidRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error)
+		QuitRoom(ctx context.Context, in *UidRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error)
+		// TODO list
+		AddRobot(ctx context.Context, in *UidRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error)
+		// rpc KickPlayer
+		StartGame(ctx context.Context, in *UidRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error)
 	}
 
 	defaultRoom struct {
@@ -43,13 +47,29 @@ func (m *defaultRoom) CreateRoom(ctx context.Context, in *CreateRoomRequest, opt
 	return client.CreateRoom(ctx, in, opts...)
 }
 
-// 房间应当有自动过期机制
-func (m *defaultRoom) JoinRoom(ctx context.Context, in *JoinRoomRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error) {
+func (m *defaultRoom) EnterRoom(ctx context.Context, in *UidAndRidRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error) {
 	client := room.NewRoomClient(m.cli.Conn())
-	return client.JoinRoom(ctx, in, opts...)
+	return client.EnterRoom(ctx, in, opts...)
 }
 
-func (m *defaultRoom) LeaveRoom(ctx context.Context, in *LeaveRoomRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error) {
+func (m *defaultRoom) ObserveRoom(ctx context.Context, in *UidAndRidRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error) {
 	client := room.NewRoomClient(m.cli.Conn())
-	return client.LeaveRoom(ctx, in, opts...)
+	return client.ObserveRoom(ctx, in, opts...)
+}
+
+func (m *defaultRoom) QuitRoom(ctx context.Context, in *UidRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error) {
+	client := room.NewRoomClient(m.cli.Conn())
+	return client.QuitRoom(ctx, in, opts...)
+}
+
+// TODO list
+func (m *defaultRoom) AddRobot(ctx context.Context, in *UidRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error) {
+	client := room.NewRoomClient(m.cli.Conn())
+	return client.AddRobot(ctx, in, opts...)
+}
+
+// rpc KickPlayer
+func (m *defaultRoom) StartGame(ctx context.Context, in *UidRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error) {
+	client := room.NewRoomClient(m.cli.Conn())
+	return client.StartGame(ctx, in, opts...)
 }

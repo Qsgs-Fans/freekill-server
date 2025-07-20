@@ -19,9 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Room_CreateRoom_FullMethodName = "/Room/CreateRoom"
-	Room_JoinRoom_FullMethodName   = "/Room/JoinRoom"
-	Room_LeaveRoom_FullMethodName  = "/Room/LeaveRoom"
+	Room_CreateRoom_FullMethodName  = "/Room/CreateRoom"
+	Room_EnterRoom_FullMethodName   = "/Room/EnterRoom"
+	Room_ObserveRoom_FullMethodName = "/Room/ObserveRoom"
+	Room_QuitRoom_FullMethodName    = "/Room/QuitRoom"
+	Room_AddRobot_FullMethodName    = "/Room/AddRobot"
+	Room_StartGame_FullMethodName   = "/Room/StartGame"
 )
 
 // RoomClient is the client API for Room service.
@@ -29,9 +32,15 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RoomClient interface {
 	CreateRoom(ctx context.Context, in *CreateRoomRequest, opts ...grpc.CallOption) (*CreateRoomReply, error)
-	// 房间应当有自动过期机制
-	JoinRoom(ctx context.Context, in *JoinRoomRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error)
-	LeaveRoom(ctx context.Context, in *LeaveRoomRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error)
+	EnterRoom(ctx context.Context, in *UidAndRidRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error)
+	ObserveRoom(ctx context.Context, in *UidAndRidRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error)
+	QuitRoom(ctx context.Context, in *UidRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error)
+	// TODO list
+	// rpc RefreshRoomList
+	AddRobot(ctx context.Context, in *UidRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error)
+	// rpc KickPlayer
+	// rpc Ready
+	StartGame(ctx context.Context, in *UidRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error)
 }
 
 type roomClient struct {
@@ -52,20 +61,50 @@ func (c *roomClient) CreateRoom(ctx context.Context, in *CreateRoomRequest, opts
 	return out, nil
 }
 
-func (c *roomClient) JoinRoom(ctx context.Context, in *JoinRoomRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error) {
+func (c *roomClient) EnterRoom(ctx context.Context, in *UidAndRidRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RoomEmptyReply)
-	err := c.cc.Invoke(ctx, Room_JoinRoom_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Room_EnterRoom_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *roomClient) LeaveRoom(ctx context.Context, in *LeaveRoomRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error) {
+func (c *roomClient) ObserveRoom(ctx context.Context, in *UidAndRidRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RoomEmptyReply)
-	err := c.cc.Invoke(ctx, Room_LeaveRoom_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Room_ObserveRoom_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *roomClient) QuitRoom(ctx context.Context, in *UidRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RoomEmptyReply)
+	err := c.cc.Invoke(ctx, Room_QuitRoom_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *roomClient) AddRobot(ctx context.Context, in *UidRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RoomEmptyReply)
+	err := c.cc.Invoke(ctx, Room_AddRobot_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *roomClient) StartGame(ctx context.Context, in *UidRequest, opts ...grpc.CallOption) (*RoomEmptyReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RoomEmptyReply)
+	err := c.cc.Invoke(ctx, Room_StartGame_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -77,9 +116,15 @@ func (c *roomClient) LeaveRoom(ctx context.Context, in *LeaveRoomRequest, opts .
 // for forward compatibility.
 type RoomServer interface {
 	CreateRoom(context.Context, *CreateRoomRequest) (*CreateRoomReply, error)
-	// 房间应当有自动过期机制
-	JoinRoom(context.Context, *JoinRoomRequest) (*RoomEmptyReply, error)
-	LeaveRoom(context.Context, *LeaveRoomRequest) (*RoomEmptyReply, error)
+	EnterRoom(context.Context, *UidAndRidRequest) (*RoomEmptyReply, error)
+	ObserveRoom(context.Context, *UidAndRidRequest) (*RoomEmptyReply, error)
+	QuitRoom(context.Context, *UidRequest) (*RoomEmptyReply, error)
+	// TODO list
+	// rpc RefreshRoomList
+	AddRobot(context.Context, *UidRequest) (*RoomEmptyReply, error)
+	// rpc KickPlayer
+	// rpc Ready
+	StartGame(context.Context, *UidRequest) (*RoomEmptyReply, error)
 	mustEmbedUnimplementedRoomServer()
 }
 
@@ -93,11 +138,20 @@ type UnimplementedRoomServer struct{}
 func (UnimplementedRoomServer) CreateRoom(context.Context, *CreateRoomRequest) (*CreateRoomReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateRoom not implemented")
 }
-func (UnimplementedRoomServer) JoinRoom(context.Context, *JoinRoomRequest) (*RoomEmptyReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method JoinRoom not implemented")
+func (UnimplementedRoomServer) EnterRoom(context.Context, *UidAndRidRequest) (*RoomEmptyReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EnterRoom not implemented")
 }
-func (UnimplementedRoomServer) LeaveRoom(context.Context, *LeaveRoomRequest) (*RoomEmptyReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method LeaveRoom not implemented")
+func (UnimplementedRoomServer) ObserveRoom(context.Context, *UidAndRidRequest) (*RoomEmptyReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ObserveRoom not implemented")
+}
+func (UnimplementedRoomServer) QuitRoom(context.Context, *UidRequest) (*RoomEmptyReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QuitRoom not implemented")
+}
+func (UnimplementedRoomServer) AddRobot(context.Context, *UidRequest) (*RoomEmptyReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddRobot not implemented")
+}
+func (UnimplementedRoomServer) StartGame(context.Context, *UidRequest) (*RoomEmptyReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartGame not implemented")
 }
 func (UnimplementedRoomServer) mustEmbedUnimplementedRoomServer() {}
 func (UnimplementedRoomServer) testEmbeddedByValue()              {}
@@ -138,38 +192,92 @@ func _Room_CreateRoom_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Room_JoinRoom_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(JoinRoomRequest)
+func _Room_EnterRoom_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UidAndRidRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RoomServer).JoinRoom(ctx, in)
+		return srv.(RoomServer).EnterRoom(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Room_JoinRoom_FullMethodName,
+		FullMethod: Room_EnterRoom_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RoomServer).JoinRoom(ctx, req.(*JoinRoomRequest))
+		return srv.(RoomServer).EnterRoom(ctx, req.(*UidAndRidRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Room_LeaveRoom_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LeaveRoomRequest)
+func _Room_ObserveRoom_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UidAndRidRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RoomServer).LeaveRoom(ctx, in)
+		return srv.(RoomServer).ObserveRoom(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Room_LeaveRoom_FullMethodName,
+		FullMethod: Room_ObserveRoom_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RoomServer).LeaveRoom(ctx, req.(*LeaveRoomRequest))
+		return srv.(RoomServer).ObserveRoom(ctx, req.(*UidAndRidRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Room_QuitRoom_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UidRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RoomServer).QuitRoom(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Room_QuitRoom_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RoomServer).QuitRoom(ctx, req.(*UidRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Room_AddRobot_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UidRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RoomServer).AddRobot(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Room_AddRobot_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RoomServer).AddRobot(ctx, req.(*UidRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Room_StartGame_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UidRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RoomServer).StartGame(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Room_StartGame_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RoomServer).StartGame(ctx, req.(*UidRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -186,12 +294,24 @@ var Room_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Room_CreateRoom_Handler,
 		},
 		{
-			MethodName: "JoinRoom",
-			Handler:    _Room_JoinRoom_Handler,
+			MethodName: "EnterRoom",
+			Handler:    _Room_EnterRoom_Handler,
 		},
 		{
-			MethodName: "LeaveRoom",
-			Handler:    _Room_LeaveRoom_Handler,
+			MethodName: "ObserveRoom",
+			Handler:    _Room_ObserveRoom_Handler,
+		},
+		{
+			MethodName: "QuitRoom",
+			Handler:    _Room_QuitRoom_Handler,
+		},
+		{
+			MethodName: "AddRobot",
+			Handler:    _Room_AddRobot_Handler,
+		},
+		{
+			MethodName: "StartGame",
+			Handler:    _Room_StartGame_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

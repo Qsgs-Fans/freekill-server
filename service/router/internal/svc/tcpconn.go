@@ -189,33 +189,46 @@ func (s *TcpConn) handlePacket(line []byte) error {
 	if err != nil {
 		return fmt.Errorf("JSON.parse error: %v", err)
 	}
+	if len(rawpacket) != 4 {
+		return fmt.Errorf("Packet %v format error: length must be 4.", string(line))
+	}
 
-	// TODO 记得进行类型不匹配测试
+
 	tpRaw, ok := rawpacket[1].(float64)
 	if !ok {
 		return fmt.Errorf("JSON error: data[1] should be number: %v", string(line))
 	}
-
 	tp := int(tpRaw)
 
 	if tp & t_NOTIFICATION != 0 {
-		// TODO: 等其他rpc施工...
+		// user向我发送notification的话，那么反正就是交给其他RPC去做
+		// TODO: user rpc的todo
+		// TODO: UpdateAvatar; UpdatePassword
+		// TODO: room rpc的todo
+		// TODO: Chat; CreateRoom; EnterRoom; ObserveRoom; RefreshRoomList; QuitRoom
+		// TODO: AddRobot; KickPlayer; Ready; StartGame
+		// TODO: game rpc的todo
+		// TODO: **PushRequest**
 
-		// command := rawpacket[2].(string)
-		// jsondata := rawpacket[3].(string)
+		// command, ok := rawpacket[2].(string)
+		// jsondata, ok := rawpacket[3].(string)
 		// packet := router.Packet {
 		// 	Command: command,
 		// 	Data: jsonData,
 		// 	ConnectionId: s.connId,
 		// }
 	} else if tp & t_REPLY != 0 {
-		reqId := rawpacket[0].(int)
+		reqIdRaw, ok := rawpacket[0].(float64)
+		if !ok {
+			return fmt.Errorf("JSON error: data[0] should be number: %v", string(line))
+		}
+		reqId := int(reqIdRaw)
 		if reqId != s.expectedReplyId {
 			return fmt.Errorf("requestId != expectedReplyId: ignored.")
 		}
 
 		s.expectedReplyId = -1
-		// TODO
+		// TODO emit replyReady 想必是Game RPC需要做的事
 	}
 
 	return nil

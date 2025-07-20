@@ -9,23 +9,22 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-type JoinRoomLogic struct {
+type ObserveRoomLogic struct {
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 	logx.Logger
 }
 
-func NewJoinRoomLogic(ctx context.Context, svcCtx *svc.ServiceContext) *JoinRoomLogic {
-	return &JoinRoomLogic{
+func NewObserveRoomLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ObserveRoomLogic {
+	return &ObserveRoomLogic{
 		ctx:    ctx,
 		svcCtx: svcCtx,
 		Logger: logx.WithContext(ctx),
 	}
 }
 
-// 房间应当有自动过期机制
-func (l *JoinRoomLogic) JoinRoom(in *room.JoinRoomRequest) (*room.RoomEmptyReply, error) {
-	l.svcCtx.AddPlayerToRoom(in.UserId, in.RoomId)
+func (l *ObserveRoomLogic) ObserveRoom(in *room.UidAndRidRequest) (*room.RoomEmptyReply, error) {
+	// todo: add your logic here and delete this line
 
 	return &room.RoomEmptyReply{}, nil
 }

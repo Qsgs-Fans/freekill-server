@@ -28,13 +28,29 @@ func (s *RoomServer) CreateRoom(ctx context.Context, in *room.CreateRoomRequest)
 	return l.CreateRoom(in)
 }
 
-// 房间应当有自动过期机制
-func (s *RoomServer) JoinRoom(ctx context.Context, in *room.JoinRoomRequest) (*room.RoomEmptyReply, error) {
-	l := logic.NewJoinRoomLogic(ctx, s.svcCtx)
-	return l.JoinRoom(in)
+func (s *RoomServer) EnterRoom(ctx context.Context, in *room.UidAndRidRequest) (*room.RoomEmptyReply, error) {
+	l := logic.NewEnterRoomLogic(ctx, s.svcCtx)
+	return l.EnterRoom(in)
 }
 
-func (s *RoomServer) LeaveRoom(ctx context.Context, in *room.LeaveRoomRequest) (*room.RoomEmptyReply, error) {
-	l := logic.NewLeaveRoomLogic(ctx, s.svcCtx)
-	return l.LeaveRoom(in)
+func (s *RoomServer) ObserveRoom(ctx context.Context, in *room.UidAndRidRequest) (*room.RoomEmptyReply, error) {
+	l := logic.NewObserveRoomLogic(ctx, s.svcCtx)
+	return l.ObserveRoom(in)
+}
+
+func (s *RoomServer) QuitRoom(ctx context.Context, in *room.UidRequest) (*room.RoomEmptyReply, error) {
+	l := logic.NewQuitRoomLogic(ctx, s.svcCtx)
+	return l.QuitRoom(in)
+}
+
+// TODO list
+func (s *RoomServer) AddRobot(ctx context.Context, in *room.UidRequest) (*room.RoomEmptyReply, error) {
+	l := logic.NewAddRobotLogic(ctx, s.svcCtx)
+	return l.AddRobot(in)
+}
+
+// rpc KickPlayer
+func (s *RoomServer) StartGame(ctx context.Context, in *room.UidRequest) (*room.RoomEmptyReply, error) {
+	l := logic.NewStartGameLogic(ctx, s.svcCtx)
+	return l.StartGame(in)
 }

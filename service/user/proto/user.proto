@@ -32,4 +32,6 @@ service User {
   rpc Logout(ConnIdMsg) returns (UserEmpty);
 
   // TODO: 信息更新类
+  // rpc UpdateAvatar
+  // rpc UpdatePassword
 }
